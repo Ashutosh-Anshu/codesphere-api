@@ -1,0 +1,54 @@
+# Build output
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Visual Studio Code
+.vscode/
+
+# JetBrains Rider / ReSharper
+.idea/
+*.sln.iml
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+
+# Logs
+*.log
+
+# ASP.NET Core
+wwwroot/lib/
+
+# Environment variables
+.env
+.env.*
+
+# Local development configuration / secrets
+appsettings.Development.json
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test results
+TestResults/
+*.trx
+
+# Coverage
+coverage/
+coverage.opencover.xml
+
+# Temporary files
+*.tmp
+*.temp
+
+# Azure Functions local settings (if applicable)
+local.settings.json
