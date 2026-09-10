@@ -12,16 +12,16 @@ namespace codesphere_api.Controllers
             _productService = productService;
         }
 
-        [HttpPost]
+        [HttpPost("createAsync")]
         public async Task<IActionResult> CreateAsync(
-            ProductDTO product,
+            [FromBody] ProductDTO product,
             CancellationToken cancellationToken = default)
         {
             var products = await _productService.CreateAsync(product, cancellationToken);
             return Ok(products);
         }
 
-        [HttpGet("{productId}")]
+        [HttpGet("getByIdAsync/{productId}")]
         public async Task<IActionResult> GetByIdAsync(
             Guid productId,
             CancellationToken cancellationToken = default)
@@ -30,7 +30,7 @@ namespace codesphere_api.Controllers
             return Ok(product);
         }
 
-        [HttpGet]
+        [HttpGet("getAllAsync")]
         public async Task<IActionResult> GetAllAsync(
             CancellationToken cancellationToken = default)
         {
@@ -38,16 +38,16 @@ namespace codesphere_api.Controllers
             return Ok(products);
         }
 
-        [HttpPost]
+        [HttpPut("updateAsync")]
         public async Task<IActionResult> UpdateAsync(
-            ProductDTO product,
+            [FromBody] ProductDTO product,
             CancellationToken cancellationToken = default)
         {
             var products = await _productService.UpdateAsync(product, cancellationToken);
             return Ok(products);
         }
 
-        [HttpDelete("{productId}")]
+        [HttpDelete("deleteAsync/{productId}")]
         public async Task<IActionResult> DeleteAsync(
             Guid productId,
             CancellationToken cancellationToken = default)
