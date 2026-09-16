@@ -5,7 +5,7 @@ namespace codesphere_api.Services.interfaces
 {
     public interface IProductService
     {
-        Task<ApiResponse<ProductDTO>> CreateAsync(
+        Task<ApiResponse<ProductDTO>> CreateOrUpdateAsync(
             ProductDTO product,
             CancellationToken cancellationToken = default);
 
@@ -14,10 +14,6 @@ namespace codesphere_api.Services.interfaces
             CancellationToken cancellationToken = default);
 
         Task<ApiResponse<IReadOnlyList<ProductDTO>>> GetAllAsync(
-            CancellationToken cancellationToken = default);
-
-        Task<ApiResponse<ProductDTO>> UpdateAsync(
-            ProductDTO product,
             CancellationToken cancellationToken = default);
 
         Task<ApiResponse<bool>> DeleteAsync(

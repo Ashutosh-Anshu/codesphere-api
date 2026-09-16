@@ -12,12 +12,12 @@ namespace codesphere_api.Controllers
             _productService = productService;
         }
 
-        [HttpPost("createAsync")]
-        public async Task<IActionResult> CreateAsync(
+        [HttpPost("createOrUpdateAsync")]
+        public async Task<IActionResult> CreateOrUpdateAsync(
             [FromBody] ProductDTO product,
             CancellationToken cancellationToken = default)
         {
-            var products = await _productService.CreateAsync(product, cancellationToken);
+            var products = await _productService.CreateOrUpdateAsync(product, cancellationToken);
             return Ok(products);
         }
 
@@ -35,15 +35,6 @@ namespace codesphere_api.Controllers
             CancellationToken cancellationToken = default)
         {
             var products = await _productService.GetAllAsync(cancellationToken);
-            return Ok(products);
-        }
-
-        [HttpPut("updateAsync")]
-        public async Task<IActionResult> UpdateAsync(
-            [FromBody] ProductDTO product,
-            CancellationToken cancellationToken = default)
-        {
-            var products = await _productService.UpdateAsync(product, cancellationToken);
             return Ok(products);
         }
 

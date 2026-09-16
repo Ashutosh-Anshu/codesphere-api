@@ -18,15 +18,26 @@ namespace codesphere_api.Repositories
             _mapper = mapper;
         }
 
-        public async Task<ApiResponse<ProductDTO>> CreateAsync(ProductDTO productDto, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<ProductDTO>> CreateOrUpdateAsync(ProductDTO productDto, CancellationToken cancellationToken = default)
         {
             var product = _mapper.Map<Product>(productDto);
-            await _context.Products.AddAsync(product, cancellationToken);
+            string msg = string.Empty;
+            if(productDto.ProductId == Guid.Empty)
+            {
+                await _context.Products.AddAsync(product, cancellationToken);
+                msg = "Product created successfully";
+            }
+            else
+            {
+                product.ModifiedAt = DateTime.UtcNow;
+                _context.Products.Update(product);
+                msg = "Product updated successfully";
+            }
             await _context.SaveChangesAsync(cancellationToken);
             var result = _mapper.Map<ProductDTO>(product);
             return new ApiResponse<ProductDTO>(
                 true, 
-                "Product created successfully", 
+                msg, 
                 result, 
                 StatusCodes.Status201Created);
         }

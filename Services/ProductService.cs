@@ -12,9 +12,9 @@ namespace codesphere_api.Services
         {
             _productRepository = productRepository;
         }
-        public Task<ApiResponse<ProductDTO>> CreateAsync(ProductDTO product, CancellationToken cancellationToken = default)
+        public Task<ApiResponse<ProductDTO>> CreateOrUpdateAsync(ProductDTO product, CancellationToken cancellationToken = default)
         {
-            return _productRepository.CreateAsync(product, cancellationToken);
+            return _productRepository.CreateOrUpdateAsync(product, cancellationToken);
         }
 
         public Task<ApiResponse<bool>> DeleteAsync(Guid productId, CancellationToken cancellationToken = default)
@@ -32,9 +32,5 @@ namespace codesphere_api.Services
             return _productRepository.GetByIdAsync(productId, cancellationToken);
         }
 
-        public Task<ApiResponse<ProductDTO>> UpdateAsync(ProductDTO product, CancellationToken cancellationToken = default)
-        {
-            return _productRepository.UpdateAsync(product, cancellationToken);
-        }
     }
 }
