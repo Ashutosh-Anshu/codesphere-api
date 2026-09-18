@@ -14,6 +14,7 @@ namespace codesphere_api.Repositories.Interfaces
             CancellationToken cancellationToken = default);
 
         Task<ApiResponse<IReadOnlyList<ProductDTO>>> GetAllAsync(
+            string? search,
             CancellationToken cancellationToken = default);
 
         Task<ApiResponse<bool>> DeleteAsync(

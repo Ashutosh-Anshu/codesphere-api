@@ -32,9 +32,10 @@ namespace codesphere_api.Controllers
 
         [HttpGet("getAllAsync")]
         public async Task<IActionResult> GetAllAsync(
+            string? search = null,
             CancellationToken cancellationToken = default)
         {
-            var products = await _productService.GetAllAsync(cancellationToken);
+            var products = await _productService.GetAllAsync(search, cancellationToken);
             return Ok(products);
         }
 

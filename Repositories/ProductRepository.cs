@@ -72,9 +72,24 @@ namespace codesphere_api.Repositories
                 StatusCodes.Status200OK);
         }
 
-        public async Task<ApiResponse<IReadOnlyList<ProductDTO>>> GetAllAsync(CancellationToken cancellationToken = default)
+
+        public async Task<ApiResponse<IReadOnlyList<ProductDTO>>> GetAllAsync(string? search, CancellationToken cancellationToken = default)
         {
-            var result = await _context.Products.AsNoTracking().ToListAsync(cancellationToken);
+            var query = _context.Products
+                .AsNoTracking()
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim();
+
+                query = query.Where(x =>
+                    x.Name.Contains(search) ||
+                    x.Description.Contains(search));
+            }
+
+            var result = await query
+                .ToListAsync(cancellationToken);
 
             var products = _mapper.Map<IReadOnlyList<ProductDTO>>(result);
 
@@ -84,6 +99,7 @@ namespace codesphere_api.Repositories
                 products,
                 StatusCodes.Status200OK);
         }
+
 
         public async Task<ApiResponse<ProductDTO?>> GetByIdAsync(Guid productId, CancellationToken cancellationToken = default)
         {
