@@ -1,5 +1,6 @@
 ﻿using codesphere_api.Common.DTOs;
 using codesphere_api.DTOs;
+using codesphere_api.Models;
 
 namespace codesphere_api.Services.interfaces
 {
@@ -13,9 +14,9 @@ namespace codesphere_api.Services.interfaces
             Guid productId,
             CancellationToken cancellationToken = default);
 
-        Task<ApiResponse<IReadOnlyList<ProductDTO>>> GetAllAsync(
-            string? search,
-            CancellationToken cancellationToken = default);
+        Task<ApiResponse<PaginatedResponse<ProductDTO>>> GetAllAsync(
+            QueryParameters queryParameters,
+            CancellationToken cancellationToken);
 
         Task<ApiResponse<bool>> DeleteAsync(
             Guid productId,

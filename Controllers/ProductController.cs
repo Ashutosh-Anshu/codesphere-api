@@ -1,4 +1,5 @@
-﻿using codesphere_api.DTOs;
+﻿using codesphere_api.Common.DTOs;
+using codesphere_api.DTOs;
 using codesphere_api.Services.interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -32,10 +33,13 @@ namespace codesphere_api.Controllers
 
         [HttpGet("getAllAsync")]
         public async Task<IActionResult> GetAllAsync(
-            string? search = null,
+            [FromQuery] QueryParameters queryParameters,
             CancellationToken cancellationToken = default)
         {
-            var products = await _productService.GetAllAsync(search, cancellationToken);
+            var products = await _productService.GetAllAsync(
+                queryParameters,
+                cancellationToken);
+
             return Ok(products);
         }
 

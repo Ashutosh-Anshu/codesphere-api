@@ -22,9 +22,9 @@ namespace codesphere_api.Services
             return _productRepository.DeleteAsync(productId, cancellationToken);
         }
 
-        public Task<ApiResponse<IReadOnlyList<ProductDTO>>> GetAllAsync(string? search, CancellationToken cancellationToken = default)
+        public Task<ApiResponse<PaginatedResponse<ProductDTO>>> GetAllAsync(QueryParameters queryParameters, CancellationToken cancellationToken = default)
         {
-            return _productRepository.GetAllAsync(search, cancellationToken);
+            return _productRepository.GetAllAsync(queryParameters, cancellationToken);
         }
 
         public Task<ApiResponse<ProductDTO?>> GetByIdAsync(Guid productId, CancellationToken cancellationToken = default)

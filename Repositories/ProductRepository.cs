@@ -22,7 +22,7 @@ namespace codesphere_api.Repositories
         {
             var product = _mapper.Map<Product>(productDto);
             string msg = string.Empty;
-            if(productDto.ProductId == Guid.Empty)
+            if (productDto.ProductId == Guid.Empty)
             {
                 await _context.Products.AddAsync(product, cancellationToken);
                 msg = "Product created successfully";
@@ -36,15 +36,15 @@ namespace codesphere_api.Repositories
             await _context.SaveChangesAsync(cancellationToken);
             var result = _mapper.Map<ProductDTO>(product);
             return new ApiResponse<ProductDTO>(
-                true, 
-                msg, 
-                result, 
+                true,
+                msg,
+                result,
                 StatusCodes.Status201Created);
         }
 
         public async Task<ApiResponse<bool>> DeleteAsync(Guid productId, CancellationToken cancellationToken = default)
         {
-            if(productId == Guid.Empty)
+            if (productId == Guid.Empty)
             {
                 return new ApiResponse<bool>(
                     false,
@@ -73,30 +73,50 @@ namespace codesphere_api.Repositories
         }
 
 
-        public async Task<ApiResponse<IReadOnlyList<ProductDTO>>> GetAllAsync(string? search, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<PaginatedResponse<ProductDTO>>> GetAllAsync(
+        QueryParameters queryParameters,
+        CancellationToken cancellationToken)
         {
-            var query = _context.Products
-                .AsNoTracking()
-                .AsQueryable();
+            var query = _context.Products.AsNoTracking();
 
-            if (!string.IsNullOrWhiteSpace(search))
+            if (!string.IsNullOrWhiteSpace(queryParameters.SearchValue))
             {
-                search = search.Trim();
+                var searchValue = queryParameters.SearchValue.Trim();
 
                 query = query.Where(x =>
-                    x.Name.Contains(search) ||
-                    x.Description.Contains(search));
+                    x.Name.Contains(searchValue) ||
+                    x.Description.Contains(searchValue));
             }
 
-            var result = await query
+            var totalCount = await query.CountAsync(cancellationToken);
+
+            var products = await query
+                .OrderByDescending(x => x.ModifiedAt)
+                .Skip((queryParameters.PageNumber - 1) * queryParameters.PageSize)
+                .Take(queryParameters.PageSize)
+                .Select(x => new ProductDTO
+                {
+                    ProductId = x.Id,
+                    Name = x.Name,
+                    Description = x.Description,
+                    Price = x.Price,
+                    Stock = x.Stock,
+                    ModifiedAt = x.ModifiedAt
+                })
                 .ToListAsync(cancellationToken);
 
-            var products = _mapper.Map<IReadOnlyList<ProductDTO>>(result);
+            var response = new PaginatedResponse<ProductDTO>
+            {
+                Items = products,
+                TotalCount = totalCount,
+                PageNumber = queryParameters.PageNumber,
+                PageSize = queryParameters.PageSize
+            };
 
-            return new ApiResponse<IReadOnlyList<ProductDTO>>(
+            return new ApiResponse<PaginatedResponse<ProductDTO>>(
                 true,
                 "Products retrieved successfully",
-                products,
+                response,
                 StatusCodes.Status200OK);
         }
 
@@ -126,7 +146,7 @@ namespace codesphere_api.Repositories
 
         public async Task<ApiResponse<ProductDTO>> UpdateAsync(ProductDTO productDto, CancellationToken cancellationToken = default)
         {
-            if(productDto.ProductId == Guid.Empty)
+            if (productDto.ProductId == Guid.Empty)
             {
                 return new ApiResponse<ProductDTO>(
                     false,
