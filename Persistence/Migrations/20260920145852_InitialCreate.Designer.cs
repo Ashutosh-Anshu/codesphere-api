@@ -2,9 +2,9 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using codesphere_api.Persistence;
 
 #nullable disable
@@ -12,7 +12,7 @@ using codesphere_api.Persistence;
 namespace codesphere_api.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260910163756_InitialCreate")]
+    [Migration("20260920145852_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -21,44 +21,44 @@ namespace codesphere_api.Persistence.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "10.0.12")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+                .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("codesphere_api.Models.Product", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
+                        .HasColumnType("uuid")
                         .HasColumnName("ProductId");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
+                        .HasColumnType("character varying(250)");
 
                     b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
+                        .HasColumnType("boolean");
 
                     b.Property<DateTime?>("ModifiedAt")
-                        .HasColumnType("datetime2");
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("character varying(100)");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Stock")
-                        .HasColumnType("int");
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
