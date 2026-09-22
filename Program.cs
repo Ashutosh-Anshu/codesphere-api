@@ -16,12 +16,15 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
-
+builder.Services.AddHealthChecks();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CodeSpherePolicy", builder =>
     {
-        builder.WithOrigins("http://localhost:4200")
+        builder.WithOrigins(
+            "http://localhost:4200",
+            "https://codesphere-web.vercel.app/"
+            )
                .AllowAnyMethod()
                .AllowAnyHeader();
     });
@@ -42,5 +45,11 @@ app.UseCors("CodeSpherePolicy");
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapGet("/", () => Results.Json(new
+{
+    message = "CodeSphere API is running!",
+    status = "success"
+}));
+app.MapHealthChecks("/health");
 
 app.Run();
