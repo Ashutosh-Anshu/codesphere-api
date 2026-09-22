@@ -12,7 +12,7 @@ echo "Pulling latest code..."
 git pull origin main
 
 echo "Publishing application..."
-dotnet publish -c Release -o /home/ubuntu/codesphere-api-publish
+dotnet publish ./codesphere-api.csproj -c Release -o /home/ubuntu/codesphere-api-publish
 
 echo "Restarting API..."
 sudo systemctl restart codesphere-api
