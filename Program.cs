@@ -21,7 +21,10 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("CodeSpherePolicy", builder =>
     {
-        builder.WithOrigins("http://localhost:4200")
+        builder.WithOrigins(
+            "http://localhost:4200",
+            "https://codesphere-web.vercel.app/"
+            )
                .AllowAnyMethod()
                .AllowAnyHeader();
     });
