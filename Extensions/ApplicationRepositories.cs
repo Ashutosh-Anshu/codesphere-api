@@ -1,5 +1,7 @@
 ﻿using codesphere_api.Repositories;
 using codesphere_api.Repositories.Interfaces;
+using codesphere_api.Services;
+using codesphere_api.Services.interfaces;
 
 namespace codesphere_api.Extensions
 {
@@ -9,7 +11,7 @@ namespace codesphere_api.Extensions
             this IServiceCollection services)
         {
             services.AddScoped<IProductRepository, ProductRepository>();
-
+            services.AddScoped<IAccountRepository, AccountRepository>();
             return services;
         }
     }
