@@ -31,6 +31,25 @@ namespace codesphere_api.Services
         {
             return await _accountRepository.GetAllRoleMenu(cancellationToken);
         }
+        public async Task<ApiResponse<bool>> CreateOrUpdateRoleAsync(
+            RoleDetailDTO roleDetail, 
+            CancellationToken cancellationToken = default)
+        {
+            return await _accountRepository.CreateOrUpdateRoleAsync(roleDetail, cancellationToken);
+        }
+
+        public async Task<ApiResponse<RoleDetailDTO?>> GetRoleByIdAsync(
+            Guid roleId,
+            CancellationToken cancellationToken = default)
+        {
+            return await _accountRepository.GetRoleByIdAsync(roleId, cancellationToken);
+        }
+
+        public async Task<ApiResponse<bool>> DeleteRoleByIdAsync(Guid roleId, CancellationToken cancellationToken = default)
+        {
+            return await _accountRepository.DeleteRoleByIdAsync(roleId, cancellationToken);
+
+        }
 
     }
 }

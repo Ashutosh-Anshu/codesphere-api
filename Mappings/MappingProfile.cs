@@ -14,6 +14,15 @@ namespace codesphere_api.Mappings
                     opt => opt.MapFrom(src => src.Id)
                 )
                 .ReverseMap();
+
+            CreateMap<ApplicationRole, RoleDetailDTO>()
+                .ForMember(
+                   dest => dest.RoleId,
+                    opt => opt.MapFrom(src => src.Id)
+                )
+                .ReverseMap();
+
+            
         }
 
     }

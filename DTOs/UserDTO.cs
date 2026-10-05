@@ -43,4 +43,16 @@ namespace codesphere_api.DTOs
 
     }
 
+    public class MenuPermissionDTO
+    {
+        public Guid MenuId { get; set; }
+        public Guid PermissionId { get; set; }
+        public bool IsAllowed { get; set; }
+    }
+
+    public class RoleDetailDTO : RoleDTO
+    {
+        public List<MenuPermissionDTO> Permissions { get; set; }
+    }
+
 }

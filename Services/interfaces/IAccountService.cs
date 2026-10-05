@@ -15,5 +15,17 @@ namespace codesphere_api.Services.interfaces
         Task<ApiResponse<List<RoleMenuDTO>>> GetAllRoleMenu(
             CancellationToken cancellationToken);
 
+        Task<ApiResponse<bool>> CreateOrUpdateRoleAsync(
+            [FromBody] RoleDetailDTO roleDetail,
+            CancellationToken cancellationToken = default);
+
+        Task<ApiResponse<RoleDetailDTO?>> GetRoleByIdAsync(
+            Guid roleId,
+            CancellationToken cancellationToken = default);
+
+        Task<ApiResponse<bool>> DeleteRoleByIdAsync(
+            Guid roleId,
+            CancellationToken cancellationToken = default);
+
     }
 }
