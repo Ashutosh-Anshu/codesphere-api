@@ -27,6 +27,15 @@ namespace codesphere_api.Controllers
             return Ok(users);
         }
 
+        [HttpGet("getAllUserRoles")]
+        public async Task<IActionResult> GetAllUserRoles(
+            CancellationToken cancellationToken = default)
+        {
+            var users = await _accountService.GetAllUserRoles(cancellationToken);
+
+            return Ok(users);
+        }
+
         [HttpGet("getAllRoleAsync")]
         public async Task<IActionResult> GetAllRoleAsync(
             [FromQuery] QueryParameters queryParameters,
@@ -69,6 +78,15 @@ namespace codesphere_api.Controllers
         {
             var result = await _accountService.DeleteRoleByIdAsync(roleId, cancellationToken);
             return Ok(result);
+        }
+
+        [HttpPost("createOrUpdateUserAsync")]
+        public async Task<IActionResult> CreateOrUpdateUserAsync(
+            [FromBody] UserDetailDTO userDetail,
+            CancellationToken cancellationToken = default)
+        {
+            var users = await _accountService.CreateOrUpdateUserAsync(userDetail, cancellationToken);
+            return Ok(users);
         }
 
     }

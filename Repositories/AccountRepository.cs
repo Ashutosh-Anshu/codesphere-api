@@ -5,6 +5,7 @@ using codesphere_api.Models;
 using codesphere_api.Persistence;
 using codesphere_api.Repositories.Interfaces;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace codesphere_api.Repositories
@@ -72,8 +73,6 @@ namespace codesphere_api.Repositories
                     FirstName = x.User.FirstName,
                     LastName = x.User.LastName,
                     Email = x.User.Email ?? string.Empty,
-                    Username = x.User.UserName ?? string.Empty,
-
                     RoleId = x.Role != null
                         ? x.Role.RoleId
                         : Guid.Empty,
@@ -84,7 +83,7 @@ namespace codesphere_api.Repositories
 
                     IsActive = x.User.IsActive,
                     IsSystem = x.User.IsSystem,
-                    UpdatedAt = x.User.UpdatedAt
+                    UpdatedAt = x.User.UpdatedAt ?? x.User.CreatedAt
                 })
                 .ToListAsync(cancellationToken);
 
@@ -96,11 +95,10 @@ namespace codesphere_api.Repositories
                 PageSize = queryParameters.PageSize
             };
 
-            return new ApiResponse<PaginatedResponse<UserDTO>>(
-                true,
-                "Users retrieved successfully",
+            return ApiResponse<PaginatedResponse<UserDTO>>.Ok(
                 response,
-                StatusCodes.Status200OK);
+                "Users retrieved successfully"
+            );
         }
 
         public async Task<ApiResponse<PaginatedResponse<RoleDTO>>> GetAllRoleAsync(
@@ -143,11 +141,10 @@ namespace codesphere_api.Repositories
                 PageSize = queryParameters.PageSize
             };
 
-            return new ApiResponse<PaginatedResponse<RoleDTO>>(
-                true,
-                "Roles retrieved successfully",
+            return ApiResponse<PaginatedResponse<RoleDTO>>.Ok(
                 response,
-                StatusCodes.Status200OK);
+                "Roles retrieved successfully"
+            );
         }
 
         public async Task<ApiResponse<List<RoleMenuDTO>>> GetAllRoleMenu(
@@ -171,10 +168,10 @@ namespace codesphere_api.Repositories
                 })
                 .ToListAsync(cancellationToken);
 
-            return new ApiResponse<List<RoleMenuDTO>>(
-                success: true,
-                message: "Role menus retrieved successfully.",
-                data: menus);
+            return ApiResponse<List<RoleMenuDTO>>.Ok(
+                    menus,
+                 "Role menus retrieved successfully."
+                 );
         }
         public async Task<ApiResponse<bool>> CreateOrUpdateRoleAsync(
             RoleDetailDTO roleDetail,
@@ -195,10 +192,8 @@ namespace codesphere_api.Repositories
                     {
                         var errors = string.Join(", ", result.Errors.Select(x => x.Description));
 
-                        return new ApiResponse<bool>(
-                            false,
+                        return ApiResponse<bool>.Fail(
                             errors,
-                            false,
                             StatusCodes.Status400BadRequest);
                     }
                 }
@@ -208,10 +203,8 @@ namespace codesphere_api.Repositories
 
                     if (role == null)
                     {
-                        return new ApiResponse<bool>(
-                            false,
+                        return ApiResponse<bool>.Fail(
                             "Role not found.",
-                            false,
                             StatusCodes.Status404NotFound);
                     }
 
@@ -223,10 +216,8 @@ namespace codesphere_api.Repositories
                     {
                         var errors = string.Join(", ", result.Errors.Select(x => x.Description));
 
-                        return new ApiResponse<bool>(
-                            false,
+                        return  ApiResponse<bool>.Fail(
                             errors,
-                            false,
                             StatusCodes.Status400BadRequest);
                     }
 
@@ -254,18 +245,15 @@ namespace codesphere_api.Repositories
 
                 await _context.SaveChangesAsync(cancellationToken);
 
-                return new ApiResponse<bool>(
+                return ApiResponse<bool>.Ok(
                     true,
-                    "Role created or updated successfully.",
-                    true,
-                    StatusCodes.Status200OK);
+                    "Role created or updated successfully."
+                );
             }
             catch (Exception)
             {
-                return new ApiResponse<bool>(
-                    false,
+                return ApiResponse<bool>.Fail(
                     "An error occurred while saving the role.",
-                    false,
                     StatusCodes.Status500InternalServerError);
             }
         }
@@ -282,10 +270,8 @@ namespace codesphere_api.Repositories
 
             if (role == null)
             {
-                return new ApiResponse<RoleDetailDTO?>(
-                    false,
+                return ApiResponse<RoleDetailDTO?>.Fail(
                     "Role not found.",
-                    null,
                     StatusCodes.Status404NotFound);
             }
 
@@ -308,21 +294,21 @@ namespace codesphere_api.Repositories
                     .ToList()
             };
 
-            return new ApiResponse<RoleDetailDTO?>(
-                true,
-                "Role retrieved successfully.",
+            return ApiResponse<RoleDetailDTO?>.Ok(
                 roleDetail,
+                "Role retrieved successfully.",
                 StatusCodes.Status200OK);
         }
 
-        public async Task<ApiResponse<bool>> DeleteRoleByIdAsync(Guid roleId, CancellationToken cancellationToken = default)
+
+        public async Task<ApiResponse<bool>> DeleteRoleByIdAsync(
+            Guid roleId,
+            CancellationToken cancellationToken = default)
         {
             if (roleId == Guid.Empty)
             {
-                return new ApiResponse<bool>(
-                    false,
+                return ApiResponse<bool>.Fail(
                     "Invalid role ID",
-                    false,
                     StatusCodes.Status400BadRequest);
             }
             var role = await _roleManager.Roles
@@ -330,20 +316,121 @@ namespace codesphere_api.Repositories
 
             if (role == null)
             {
-                return new ApiResponse<bool>(
-                    false,
+                return ApiResponse<bool>.Fail(
                     "Role not found",
-                    false,
                     StatusCodes.Status404NotFound);
             }
             _context.Roles.Remove(role);
             await _context.SaveChangesAsync(cancellationToken);
-            return new ApiResponse<bool>(
+
+            return ApiResponse<bool>.Ok(
                 true,
-                "Role deleted successfully",
+                 "Role deleted successfully",
+                StatusCodes.Status200OK);
+        }
+
+        public async Task<List<RoleItemDTO>> GetAllUserRoles(
+            CancellationToken cancellationToken = default)
+        {
+            var roles = await _roleManager.Roles
+                .AsNoTracking()
+                .Select(x => new RoleItemDTO
+                {
+                    RoleId = x.Id,
+                    Name = x.Name ?? string.Empty
+                })
+                .ToListAsync(cancellationToken);
+
+            return roles;
+        }
+
+        public async Task<ApiResponse<bool>> CreateOrUpdateUserAsync(
+            UserDetailDTO userDetail,
+            CancellationToken cancellationToken = default)
+        {
+            ApplicationUser? user;
+
+            if (userDetail.UserId == Guid.Empty)
+            {
+                if (!string.IsNullOrWhiteSpace(userDetail.Email))
+                {
+                    var existingUser = await _userManager.FindByEmailAsync(userDetail.Email);
+                    if (existingUser != null)
+                    {
+                        return ApiResponse<bool>.Fail(
+                            "Email address is already in use.",
+                            StatusCodes.Status400BadRequest);
+                    }
+                }
+
+                user = _mapper.Map<ApplicationUser>(userDetail);
+                user.Id = Guid.NewGuid();
+                user.CreatedAt = DateTime.UtcNow;
+                user.UserName = user.Email;
+
+                var createResult = await _userManager.CreateAsync(user, userDetail.Password);
+                if (!createResult.Succeeded)
+                {
+                    var errors = createResult.Errors.Select(x => x.Description).ToList();
+                    return ApiResponse<bool>.Fail("User creation failed.", StatusCodes.Status400BadRequest, errors);
+                }
+            }
+            else
+            {
+                user = await _userManager.FindByIdAsync(userDetail.UserId.ToString());
+                if (user == null)
+                {
+                    return ApiResponse<bool>.Fail("User not found.", StatusCodes.Status404NotFound);
+                }
+
+                if (!string.IsNullOrWhiteSpace(userDetail.Email) && user.Email != userDetail.Email)
+                {
+                    var existingUser = await _userManager.FindByEmailAsync(userDetail.Email);
+                    if (existingUser != null && existingUser.Id != user.Id)
+                    {
+                        return ApiResponse<bool>.Fail("Email address is already in use.", StatusCodes.Status400BadRequest);
+                    }
+                }
+
+                _mapper.Map(userDetail, user);
+                user.UpdatedAt = DateTime.UtcNow;
+
+                var updateResult = await _userManager.UpdateAsync(user);
+                if (!updateResult.Succeeded)
+                {
+                    var errors = updateResult.Errors.Select(x => x.Description).ToList();
+                    return ApiResponse<bool>.Fail("User update failed.", StatusCodes.Status400BadRequest, errors);
+                }
+            }
+
+            if(userDetail.RoleId.ToString() == Guid.Empty.ToString())
+            {
+                return ApiResponse<bool>.Fail("Role not found.", StatusCodes.Status404NotFound);
+            }
+
+            var newRole = await _roleManager.FindByIdAsync(userDetail.RoleId.ToString());
+            if (newRole == null)
+            {
+                return ApiResponse<bool>.Fail("Role not found.", StatusCodes.Status404NotFound);
+            }
+
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            if (currentRoles.Any())
+            {
+                await _userManager.RemoveFromRolesAsync(user, currentRoles);
+            }
+
+            var roleResult = await _userManager.AddToRoleAsync(user, newRole.Name ?? string.Empty);
+            if (!roleResult.Succeeded)
+            {
+                var errors = roleResult.Errors.Select(x => x.Description).ToList();
+                return ApiResponse<bool>.Fail("Role assignment failed.", StatusCodes.Status400BadRequest, errors);
+            }
+
+            return ApiResponse<bool>.Ok(
                 true,
+                "User created or updated successfully.",
                 StatusCodes.Status200OK);
         }
     }
-
 }

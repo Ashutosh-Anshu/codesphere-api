@@ -60,7 +60,6 @@ namespace codesphere_api.Persistence
         {
             modelBuilder.Entity<ApplicationUser>(entity =>
             {
-                entity.ToTable("Users");
 
                 entity.Property(e => e.Id)
                     .HasColumnName("UserId");
@@ -84,8 +83,6 @@ namespace codesphere_api.Persistence
         {
             modelBuilder.Entity<ApplicationRole>(entity =>
             {
-                entity.ToTable("Roles");
-
                 entity.Property(e => e.Id)
                     .HasColumnName("RoleId");
 
@@ -134,7 +131,6 @@ namespace codesphere_api.Persistence
                 entity.Property(e => e.IsActive)
                     .IsRequired();
 
-                // Menu -> Parent Menu
                 entity.HasOne(e => e.Parent)
                     .WithMany(e => e.Children)
                     .HasForeignKey(e => e.ParentId)

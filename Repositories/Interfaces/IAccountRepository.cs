@@ -9,7 +9,8 @@ namespace codesphere_api.Repositories.Interfaces
         Task<ApiResponse<PaginatedResponse<UserDTO>>> GetAllUserAsync(
             QueryParameters queryParameters,
             CancellationToken cancellationToken);
-
+        Task<List<RoleItemDTO>> GetAllUserRoles(
+             CancellationToken cancellationToken = default);
         Task<ApiResponse<PaginatedResponse<RoleDTO>>> GetAllRoleAsync(
             QueryParameters queryParameters,
             CancellationToken cancellationToken);
@@ -19,6 +20,9 @@ namespace codesphere_api.Repositories.Interfaces
 
         Task<ApiResponse<bool>> CreateOrUpdateRoleAsync(
             [FromBody] RoleDetailDTO roleDetail,
+            CancellationToken cancellationToken = default);
+        Task<ApiResponse<bool>> CreateOrUpdateUserAsync(
+            [FromBody] UserDetailDTO userDetail,
             CancellationToken cancellationToken = default);
 
         Task<ApiResponse<RoleDetailDTO?>> GetRoleByIdAsync(

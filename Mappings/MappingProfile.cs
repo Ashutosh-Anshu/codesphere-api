@@ -22,6 +22,13 @@ namespace codesphere_api.Mappings
                 )
                 .ReverseMap();
 
+            CreateMap<ApplicationUser, UserDetailDTO>()
+                .ForMember(
+                   dest => dest.UserId,
+                    opt => opt.MapFrom(src => src.Id)
+                )
+                .ReverseMap();
+
             
         }
 

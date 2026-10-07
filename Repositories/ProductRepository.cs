@@ -35,21 +35,18 @@ namespace codesphere_api.Repositories
             }
             await _context.SaveChangesAsync(cancellationToken);
             var result = _mapper.Map<ProductDTO>(product);
-            return new ApiResponse<ProductDTO>(
-                true,
-                msg,
+            return ApiResponse<ProductDTO>.Ok(
                 result,
-                StatusCodes.Status201Created);
+                msg
+            );
         }
 
         public async Task<ApiResponse<bool>> DeleteAsync(Guid productId, CancellationToken cancellationToken = default)
         {
             if (productId == Guid.Empty)
             {
-                return new ApiResponse<bool>(
-                    false,
+                return ApiResponse<bool>.Fail(
                     "Invalid product ID",
-                    false,
                     StatusCodes.Status400BadRequest);
             }
             var product = await _context.Products
@@ -57,19 +54,16 @@ namespace codesphere_api.Repositories
 
             if (product == null)
             {
-                return new ApiResponse<bool>(
-                    false,
+                return ApiResponse<bool>.Fail(
                     "Product not found",
-                    false,
                     StatusCodes.Status404NotFound);
             }
             _context.Products.Remove(product);
             await _context.SaveChangesAsync(cancellationToken);
-            return new ApiResponse<bool>(
+            return ApiResponse<bool>.Ok(
                 true,
-                "Product deleted successfully",
-                true,
-                StatusCodes.Status200OK);
+                "Product deleted successfully"
+            );
         }
 
 
@@ -113,11 +107,10 @@ namespace codesphere_api.Repositories
                 PageSize = queryParameters.PageSize
             };
 
-            return new ApiResponse<PaginatedResponse<ProductDTO>>(
-                true,
-                "Products retrieved successfully",
+            return ApiResponse<PaginatedResponse<ProductDTO>>.Ok(
                 response,
-                StatusCodes.Status200OK);
+                "Products retrieved successfully"
+            );
         }
 
 
@@ -129,29 +122,24 @@ namespace codesphere_api.Repositories
 
             if (product == null)
             {
-                return new ApiResponse<ProductDTO?>(
-                    false,
+                return ApiResponse<ProductDTO?>.Fail(
                     "Product not found",
-                    null,
                     StatusCodes.Status404NotFound);
             }
 
             var productDto = _mapper.Map<ProductDTO>(product);
-            return new ApiResponse<ProductDTO?>(
-                true,
-                "Product retrieved successfully",
+            return ApiResponse<ProductDTO?>.Ok(
                 productDto,
-                StatusCodes.Status200OK);
+                "Product retrieved successfully"
+            );
         }
 
         public async Task<ApiResponse<ProductDTO>> UpdateAsync(ProductDTO productDto, CancellationToken cancellationToken = default)
         {
             if (productDto.ProductId == Guid.Empty)
             {
-                return new ApiResponse<ProductDTO>(
-                    false,
+                return ApiResponse<ProductDTO>.Fail(
                     "Invalid product ID",
-                    null,
                     StatusCodes.Status400BadRequest);
             }
 
@@ -160,10 +148,8 @@ namespace codesphere_api.Repositories
 
             if (product == null)
             {
-                return new ApiResponse<ProductDTO>(
-                    false,
+                return ApiResponse<ProductDTO>.Fail(
                     "Product not found",
-                    null,
                     StatusCodes.Status404NotFound);
             }
 
@@ -171,10 +157,9 @@ namespace codesphere_api.Repositories
             product.ModifiedAt = DateTime.UtcNow;
             await _context.SaveChangesAsync(cancellationToken);
             var result = _mapper.Map<ProductDTO>(product);
-            return new ApiResponse<ProductDTO>(
-                true,
-                "Product updated successfully",
+            return ApiResponse<ProductDTO>.Ok(
                 result,
+                "Product updated successfully",
                 StatusCodes.Status200OK);
         }
     }
