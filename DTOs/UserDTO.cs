@@ -43,7 +43,7 @@ namespace codesphere_api.DTOs
         public string MenuName { get; set; } = string.Empty;
 
         public string? Description { get; set; }
-        public List<PermissionDTO> Permissions { get; set; }
+        public List<PermissionDTO> Permissions { get; set; } = new();
     }
     public class PermissionDTO
     {
@@ -62,7 +62,7 @@ namespace codesphere_api.DTOs
 
     public class RoleDetailDTO : RoleDTO
     {
-        public List<MenuPermissionDTO> Permissions { get; set; }
+        public List<MenuPermissionDTO> Permissions { get; set; } = new();
     }
 
     public class UserDetailDTO : UserDTO 

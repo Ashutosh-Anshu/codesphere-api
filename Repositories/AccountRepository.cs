@@ -433,12 +433,14 @@ namespace codesphere_api.Repositories
                 }
             }
 
-            if (userDetail.RoleId.ToString() == Guid.Empty.ToString())
+            var roleId = userDetail.RoleId.ToString() ?? Guid.Empty.ToString();
+
+            if (roleId == Guid.Empty.ToString())
             {
                 return ApiResponse<bool>.Fail("Role not found.", StatusCodes.Status404NotFound);
             }
 
-            var newRole = await _roleManager.FindByIdAsync(userDetail.RoleId.ToString());
+            var newRole = await _roleManager.FindByIdAsync(roleId);
             if (newRole == null)
             {
                 return ApiResponse<bool>.Fail("Role not found.", StatusCodes.Status404NotFound);
