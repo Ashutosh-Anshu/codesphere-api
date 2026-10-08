@@ -29,7 +29,7 @@ namespace codesphere_api.Repositories
             _roleManager = roleManager;
         }
 
-        public async Task<ApiResponse<PaginatedResponse<UserDTO>>> GetAllUserAsync(
+        public async Task<ApiResponse<PaginatedResponse<UserDTO>>> GetAllUsersAsync(
             QueryParameters queryParameters,
             CancellationToken cancellationToken)
         {
@@ -216,7 +216,7 @@ namespace codesphere_api.Repositories
                     {
                         var errors = string.Join(", ", result.Errors.Select(x => x.Description));
 
-                        return  ApiResponse<bool>.Fail(
+                        return ApiResponse<bool>.Fail(
                             errors,
                             StatusCodes.Status400BadRequest);
                     }
@@ -329,6 +329,36 @@ namespace codesphere_api.Repositories
                 StatusCodes.Status200OK);
         }
 
+        public async Task<ApiResponse<bool>> DeleteUserByIdAsync(
+            Guid userId,
+            CancellationToken cancellationToken = default)
+        {
+            if (userId == Guid.Empty)
+            {
+                return ApiResponse<bool>.Fail(
+                    "Invalid user ID",
+                    StatusCodes.Status400BadRequest);
+            }
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+            {
+                return ApiResponse<bool>.Fail(
+                    "User not found",
+                    StatusCodes.Status404NotFound);
+            }
+            var deleteResult = await _userManager.DeleteAsync(user);
+            if (!deleteResult.Succeeded)
+            {
+                var errors = deleteResult.Errors.Select(x => x.Description).ToList();
+                return ApiResponse<bool>.Fail("User deletion failed.", StatusCodes.Status400BadRequest, errors);
+            }
+
+            return ApiResponse<bool>.Ok(
+                true,
+                "User deleted successfully",
+                StatusCodes.Status200OK);
+        }
+
         public async Task<List<RoleItemDTO>> GetAllUserRoles(
             CancellationToken cancellationToken = default)
         {
@@ -403,7 +433,7 @@ namespace codesphere_api.Repositories
                 }
             }
 
-            if(userDetail.RoleId.ToString() == Guid.Empty.ToString())
+            if (userDetail.RoleId.ToString() == Guid.Empty.ToString())
             {
                 return ApiResponse<bool>.Fail("Role not found.", StatusCodes.Status404NotFound);
             }
@@ -432,5 +462,55 @@ namespace codesphere_api.Repositories
                 "User created or updated successfully.",
                 StatusCodes.Status200OK);
         }
+
+        public async Task<ApiResponse<UserDetailDTO?>> GetUserByIdAsync(
+            Guid userId,
+            CancellationToken cancellationToken = default)
+        {
+            if (userId == Guid.Empty)
+            {
+                return ApiResponse<UserDetailDTO?>.Fail(
+                    "Invalid user ID.",
+                    StatusCodes.Status400BadRequest);
+            }
+
+            var user = await _userManager.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(
+                    u => u.Id == userId,
+                    cancellationToken);
+
+            if (user == null)
+            {
+                return ApiResponse<UserDetailDTO?>.Fail(
+                    "User not found.",
+                    StatusCodes.Status404NotFound);
+            }
+
+            var roles = await (
+                from userRole in _context.UserRoles
+                join role in _context.Roles
+                    on userRole.RoleId equals role.Id
+                where userRole.UserId == userId
+                select role
+            )
+            .AsNoTracking()
+            .FirstOrDefaultAsync(cancellationToken);
+
+            var userDetail = _mapper.Map<UserDetailDTO>(user);
+
+
+            userDetail.RoleId = roles?.Id ?? Guid.Empty;
+            userDetail.UserId = user.Id;
+            userDetail.Email = user.Email ?? string.Empty;
+            userDetail.Password = user.PasswordHash ?? string.Empty;
+
+            return ApiResponse<UserDetailDTO?>.Ok(
+                userDetail,
+                "User retrieved successfully.",
+                StatusCodes.Status200OK);
+        }
+
     }
+
 }

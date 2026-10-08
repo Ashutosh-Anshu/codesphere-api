@@ -2,6 +2,7 @@
 
 public class ApplicationUser : IdentityUser<Guid>
 {
+    public override Guid Id { get; set; }
     public string FirstName { get; set; } = string.Empty;
 
     public string LastName { get; set; } = string.Empty;

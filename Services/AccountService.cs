@@ -14,11 +14,11 @@ namespace codesphere_api.Services
             _accountRepository = accountRepository;
         }
 
-        public async Task<ApiResponse<PaginatedResponse<UserDTO>>> GetAllUserAsync(
+        public async Task<ApiResponse<PaginatedResponse<UserDTO>>> GetAllUsersAsync(
             QueryParameters queryParameters, 
             CancellationToken cancellationToken)
         {
-            return await _accountRepository.GetAllUserAsync(queryParameters, cancellationToken);
+            return await _accountRepository.GetAllUsersAsync(queryParameters, cancellationToken);
         }
         public async Task<ApiResponse<PaginatedResponse<RoleDTO>>> GetAllRoleAsync(
             QueryParameters queryParameters, 
@@ -60,6 +60,16 @@ namespace codesphere_api.Services
         public async Task<List<RoleItemDTO>> GetAllUserRoles(CancellationToken cancellationToken = default)
         {
             return await _accountRepository.GetAllUserRoles(cancellationToken);
+        }
+
+        public async Task<ApiResponse<UserDetailDTO?>> GetUserByIdAsync(Guid userId, CancellationToken cancellationToken = default)
+        {
+            return await _accountRepository.GetUserByIdAsync(userId, cancellationToken);
+        }
+
+        public Task<ApiResponse<bool>> DeleteUserByIdAsync(Guid userId, CancellationToken cancellationToken = default)
+        {
+            return _accountRepository.DeleteUserByIdAsync(userId, cancellationToken);
         }
     }
 }

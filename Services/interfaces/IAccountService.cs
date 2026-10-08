@@ -6,7 +6,7 @@ namespace codesphere_api.Services.interfaces
 {
     public interface IAccountService
     {
-        Task<ApiResponse<PaginatedResponse<UserDTO>>> GetAllUserAsync(
+        Task<ApiResponse<PaginatedResponse<UserDTO>>> GetAllUsersAsync(
             QueryParameters queryParameters,
             CancellationToken cancellationToken);
         Task<List<RoleItemDTO>> GetAllUserRoles(
@@ -27,9 +27,15 @@ namespace codesphere_api.Services.interfaces
         Task<ApiResponse<RoleDetailDTO?>> GetRoleByIdAsync(
             Guid roleId,
             CancellationToken cancellationToken = default);
+        Task<ApiResponse<UserDetailDTO?>> GetUserByIdAsync(
+            Guid userId,
+            CancellationToken cancellationToken = default);
 
         Task<ApiResponse<bool>> DeleteRoleByIdAsync(
             Guid roleId,
+            CancellationToken cancellationToken = default);
+        Task<ApiResponse<bool>> DeleteUserByIdAsync(
+            Guid userId,
             CancellationToken cancellationToken = default);
 
     }

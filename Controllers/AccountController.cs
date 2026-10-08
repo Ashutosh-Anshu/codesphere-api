@@ -15,12 +15,12 @@ namespace codesphere_api.Controllers
             _accountService = accountService;
         }
 
-        [HttpGet("getAllUserAsync")]
-        public async Task<IActionResult> GetAllUserAsync(
+        [HttpGet("getAllUsersAsync")]
+        public async Task<IActionResult> GetAllUsersAsync(
             [FromQuery] QueryParameters queryParameters,
             CancellationToken cancellationToken = default)
         {
-            var users = await _accountService.GetAllUserAsync(
+            var users = await _accountService.GetAllUsersAsync(
                 queryParameters,
                 cancellationToken);
 
@@ -79,6 +79,14 @@ namespace codesphere_api.Controllers
             var result = await _accountService.DeleteRoleByIdAsync(roleId, cancellationToken);
             return Ok(result);
         }
+        [HttpDelete("deleteUserById/{userId}")]
+        public async Task<IActionResult> DeleteUserByIdAsync(
+            Guid userId,
+            CancellationToken cancellationToken = default)
+        {
+            var result = await _accountService.DeleteUserByIdAsync(userId, cancellationToken);
+            return Ok(result);
+        }
 
         [HttpPost("createOrUpdateUserAsync")]
         public async Task<IActionResult> CreateOrUpdateUserAsync(
@@ -87,6 +95,16 @@ namespace codesphere_api.Controllers
         {
             var users = await _accountService.CreateOrUpdateUserAsync(userDetail, cancellationToken);
             return Ok(users);
+        }
+
+
+        [HttpGet("getUserById/{userId}")]
+        public async Task<IActionResult> GetUserById(
+            Guid userId,
+            CancellationToken cancellationToken = default)
+        {
+            var role = await _accountService.GetUserByIdAsync(userId, cancellationToken);
+            return Ok(role);
         }
 
     }

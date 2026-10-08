@@ -66,10 +66,7 @@ namespace codesphere_api.Repositories
             );
         }
 
-
-        public async Task<ApiResponse<PaginatedResponse<ProductDTO>>> GetAllAsync(
-        QueryParameters queryParameters,
-        CancellationToken cancellationToken)
+        public async Task<ApiResponse<PaginatedResponse<ProductDTO>>> GetAllAsync(QueryParameters queryParameters, CancellationToken cancellationToken)
         {
             var query = _context.Products.AsNoTracking();
 
@@ -112,7 +109,6 @@ namespace codesphere_api.Repositories
                 "Products retrieved successfully"
             );
         }
-
 
         public async Task<ApiResponse<ProductDTO?>> GetByIdAsync(Guid productId, CancellationToken cancellationToken = default)
         {
