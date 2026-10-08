@@ -43,7 +43,7 @@ namespace codesphere_api.Controllers
             return Ok(products);
         }
 
-        [HttpDelete("deleteAsync/{productId}")]
+        [HttpDelete("deleteRoleById/{productId}")]
         public async Task<IActionResult> DeleteAsync(
             Guid productId,
             CancellationToken cancellationToken = default)

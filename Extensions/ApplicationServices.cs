@@ -11,6 +11,8 @@ namespace codesphere_api.Extensions
             this IServiceCollection services)
         {
             services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<IAccountService, AccountService>();
+
 
             services.AddAutoMapper(cfg => { }, typeof(MappingProfile));
             return services;
