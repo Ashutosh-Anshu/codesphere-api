@@ -1,5 +1,4 @@
 ﻿using codesphere_api.Common.Models;
-using codesphere_api.Models;
 
 public class Menu : BaseEntity
 {
@@ -8,6 +7,7 @@ public class Menu : BaseEntity
     public string Code { get; set; } = string.Empty;
 
     public string? Description { get; set; }
+    public string Icon { get; set; } = string.Empty;
 
     public string? Route { get; set; } 
 

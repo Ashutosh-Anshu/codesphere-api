@@ -5,8 +5,12 @@ using codesphere_api.Models;
 using codesphere_api.Persistence;
 using codesphere_api.Repositories.Interfaces;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace codesphere_api.Repositories
 {
@@ -16,17 +20,20 @@ namespace codesphere_api.Repositories
         private readonly IMapper _mapper;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<ApplicationRole> _roleManager;
+        private readonly IConfiguration _configuration;
 
         public AccountRepository(
             ApplicationDbContext context,
             IMapper mapper,
             UserManager<ApplicationUser> userManager,
-            RoleManager<ApplicationRole> roleManager)
+            RoleManager<ApplicationRole> roleManager,
+            IConfiguration configuration)
         {
             _context = context;
             _mapper = mapper;
             _userManager = userManager;
             _roleManager = roleManager;
+            _configuration = configuration;
         }
 
         public async Task<ApiResponse<PaginatedResponse<UserDTO>>> GetAllUsersAsync(
@@ -513,6 +520,198 @@ namespace codesphere_api.Repositories
                 StatusCodes.Status200OK);
         }
 
-    }
+        public async Task<ApiResponse<LoginResponse>> LoginAsync(
+            LoginRequest request,
+            CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+            {
+                return ApiResponse<LoginResponse>.Fail(
+                    "Invalid email or password.",
+                    StatusCodes.Status401Unauthorized);
+            }
 
+            var user = await _userManager.FindByEmailAsync(request.Email);
+
+            if (user == null)
+            {
+                return ApiResponse<LoginResponse>.Fail(
+                    "Invalid email or password.",
+                    StatusCodes.Status401Unauthorized);
+            }
+
+            var passwordValid = await _userManager.CheckPasswordAsync(
+                user,
+                request.Password);
+
+            if (!passwordValid)
+            {
+                return ApiResponse<LoginResponse>.Fail(
+                    "Invalid email or password.",
+                    StatusCodes.Status401Unauthorized);
+            }
+
+            var role = await (
+                    from userRole in _context.UserRoles
+                    join r in _context.Roles
+                        on userRole.RoleId equals r.Id
+                    where userRole.UserId == user.Id
+                    select new RoleItemDTO
+                    {
+                        RoleId = r.Id,
+                        Name = r.Name ?? string.Empty
+                    }
+                )
+                .AsNoTracking()
+                .FirstOrDefaultAsync(cancellationToken);
+
+            if (role == null)
+            {
+                return ApiResponse<LoginResponse>.Fail(
+                    "Invalid user Role.",
+                    StatusCodes.Status401Unauthorized);
+            }
+
+            var accessToken = GenerateAccessToken(user, role);
+            var refreshToken = GenerateRefreshToken(accessToken);
+
+            var expiresIn = int.Parse(
+                _configuration["Jwt:ExpirationInMinutes"] ?? "60");
+
+            var loginResponse = new LoginResponse
+            {
+                AccessToken = accessToken,
+                Token = accessToken,
+                RefreshToken = refreshToken,
+                ExpiresIn = expiresIn * 60,
+
+                User = new UserDetailResponse
+                {
+                    UserId = user.Id,
+                    FirstName = user.FirstName ?? string.Empty,
+                    LastName = user.LastName ?? string.Empty,
+                    Email = user.Email ?? string.Empty,
+                    RoleId = role?.RoleId ?? Guid.Empty,
+                    RoleName = role?.Name ?? string.Empty
+                }
+            };
+
+            return ApiResponse<LoginResponse>.Ok(
+                loginResponse,
+                "Login successful.",
+                StatusCodes.Status200OK);
+        }
+
+        private string GenerateAccessToken(ApplicationUser user, RoleItemDTO role)
+        {
+
+            var jwtKey = _configuration["Jwt:Key"];
+            var issuer = _configuration["Jwt:Issuer"];
+            var audience = _configuration["Jwt:Audience"];
+
+            if (string.IsNullOrWhiteSpace(jwtKey))
+                throw new InvalidOperationException("JWT key is not configured.");
+
+            if (string.IsNullOrWhiteSpace(issuer))
+                throw new InvalidOperationException("JWT issuer is not configured.");
+
+            if (string.IsNullOrWhiteSpace(audience))
+                throw new InvalidOperationException("JWT audience is not configured.");
+
+            if (!int.TryParse(_configuration["Jwt:ExpirationInMinutes"], out var expirationMinutes) || expirationMinutes <= 0)
+            {
+                throw new InvalidOperationException("JWT expiration must be a positive integer.");
+            }
+
+            var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
+
+            if (keyBytes.Length < 32)
+            {
+                throw new InvalidOperationException("JWT key must be at least 32 bytes for HS256.");
+            }
+
+            var now = DateTime.UtcNow;
+
+            var claims = new List<Claim>
+            {
+                new(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Iat, new DateTimeOffset(now).ToUnixTimeSeconds().ToString(), ClaimValueTypes.Integer64),
+                new(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
+
+                new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new(ClaimTypes.Name, user.UserName ?? user.Email ?? string.Empty),
+
+                new("RoleId", role.RoleId.ToString()),
+                new(ClaimTypes.Role, role.Name),
+            };
+
+            var signingKey = new SymmetricSecurityKey(keyBytes);
+
+            var credentials = new SigningCredentials(
+                signingKey,
+                SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: issuer,
+                audience: audience,
+                claims: claims,
+                notBefore: now,
+                expires: now.AddMinutes(expirationMinutes),
+                signingCredentials: credentials);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
+        private static string GenerateRefreshToken(string token)
+        {
+            var bytes = Encoding.UTF8.GetBytes(token);
+            var hash = SHA256.HashData(bytes);
+
+            return Convert.ToHexString(hash);
+        }
+
+        public async Task<ApiResponse<List<MenuDTO>>> GetMenusByUserId(
+    Guid userId,
+    CancellationToken cancellationToken = default)
+        {
+            if (userId == Guid.Empty)
+            {
+                return ApiResponse<List<MenuDTO>>.Fail(
+                    "Invalid user ID.",
+                    StatusCodes.Status400BadRequest);
+            }
+
+            var menus = await (
+                from userRole in _context.UserRoles
+                join rolePermission in _context.RolePermissions
+                    on userRole.RoleId equals rolePermission.RoleId
+                join permission in _context.Permissions
+                    on rolePermission.PermissionId equals permission.Id
+                join menu in _context.Menus
+                    on permission.MenuId equals menu.Id
+                where userRole.UserId == userId
+                group menu by new
+                {
+                    menu.Id,
+                    menu.Name,
+                    menu.Route,
+                    menu.ParentId,
+                    menu.Icon
+                }
+                into grouped
+                select new MenuDTO
+                {
+                    MenuId = grouped.Key.Id,
+                    Name = grouped.Key.Name,
+                    Route = grouped.Key.Route,
+                    ParentId = grouped.Key.ParentId,
+                    Icon = grouped.Key.Icon
+                }
+            ).ToListAsync(cancellationToken);
+
+            return ApiResponse<List<MenuDTO>>.Ok(menus);
+        }
+
+    }
 }

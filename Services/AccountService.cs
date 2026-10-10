@@ -67,9 +67,19 @@ namespace codesphere_api.Services
             return await _accountRepository.GetUserByIdAsync(userId, cancellationToken);
         }
 
-        public Task<ApiResponse<bool>> DeleteUserByIdAsync(Guid userId, CancellationToken cancellationToken = default)
+        public async Task<ApiResponse<bool>> DeleteUserByIdAsync(Guid userId, CancellationToken cancellationToken = default)
         {
-            return _accountRepository.DeleteUserByIdAsync(userId, cancellationToken);
+            return await _accountRepository.DeleteUserByIdAsync(userId, cancellationToken);
+        }
+
+        public async Task<ApiResponse<LoginResponse>> LoginAsync(LoginRequest response, CancellationToken cancellationToken = default)
+        {
+            return await _accountRepository.LoginAsync(response, cancellationToken);
+        }
+
+        public async Task<ApiResponse<List<MenuDTO>>> GetMenusByUserId(Guid userId, CancellationToken cancellationToken = default)
+        {
+            return await _accountRepository.GetMenusByUserId(userId, cancellationToken);
         }
     }
 }

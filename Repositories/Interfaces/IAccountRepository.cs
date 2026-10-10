@@ -31,12 +31,19 @@ namespace codesphere_api.Repositories.Interfaces
         Task<ApiResponse<UserDetailDTO?>> GetUserByIdAsync(
             Guid userId,
             CancellationToken cancellationToken = default);
+        Task<ApiResponse<List<MenuDTO>>> GetMenusByUserId(
+            Guid userId,
+            CancellationToken cancellationToken = default);
 
         Task<ApiResponse<bool>> DeleteRoleByIdAsync(
             Guid roleId,
             CancellationToken cancellationToken = default);
         Task<ApiResponse<bool>> DeleteUserByIdAsync(
             Guid userId,
+            CancellationToken cancellationToken = default);
+
+        Task<ApiResponse<LoginResponse>> LoginAsync(
+            LoginRequest response,
             CancellationToken cancellationToken = default);
     }
 }

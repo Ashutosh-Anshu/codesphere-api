@@ -107,5 +107,22 @@ namespace codesphere_api.Controllers
             return Ok(role);
         }
 
+        [HttpPost("loginAsync")]
+        public async Task<IActionResult> LoginAsync(
+            [FromBody] LoginRequest response,
+            CancellationToken cancellationToken = default)
+        {
+            var roles = await _accountService.LoginAsync(response, cancellationToken);
+            return Ok(roles);
+        }
+
+        [HttpGet("getMenusByUserId/{userId}")]
+        public async Task<IActionResult> GetMenusByUserId(
+            Guid userId,
+            CancellationToken cancellationToken = default)
+        {
+            var role = await _accountService.GetMenusByUserId(userId, cancellationToken);
+            return Ok(role);
+        }
     }
 }
